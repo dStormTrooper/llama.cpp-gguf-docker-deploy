@@ -1,0 +1,44 @@
+FROM ubuntu:22.04
+# 避免交互式提示
+ENV DEBIAN_FRONTEND=noninteractive
+# 设置工作目录
+WORKDIR /app
+# 复制启动脚本
+COPY launch.sh launch.sh
+# 安装依赖
+# 克隆并编译 llama.cpp
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    wget \
+    curl \
+    && rm -rf /var/lib/apt/lists/* && \
+    git clone https://github.com/ggerganov/llama.cpp.git && \
+    # 进入 llama.cpp 目录
+    cd llama.cpp && \
+    # 编译 llama.cpp (使用 CMake)   
+    cmake -B build -DGGML_NATIVE=ON -DCMAKE_BUILD_TYPE=Release && \ 
+    cmake --build build -j$(nproc) && \
+    cd build && \
+    # 不执行 make install，直接使用 build 中的二进制文件
+    # make install && \
+    # 先备份 build 目录
+    cp -r /app/llama.cpp/build /app/build && \
+    # 删除编译依赖和源码
+    apt-get purge -y  cmake git wget curl && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    # 删除整个 llama.cpp 源码目录
+    rm -rf /app/llama.cpp && \
+    mkdir -p /app/llama.cpp && \
+    # 把 build 目录移回原位
+    mv /app/build /app/llama.cpp && \
+    # 清理 apt 缓存
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    mkdir -p /models  && \
+    chmod +x /app/launch.sh 
+# 暴露端口
+EXPOSE 8000
+# 启动命令
+CMD ["./launch.sh"]

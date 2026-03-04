@@ -1,0 +1,33 @@
+# 不需要的文件
+.git
+.gitignore
+.vscode
+.idea
+*.pyc
+__pycache__/
+.pytest_cache/
+.coverage
+
+# 模型文件（通过 volume 挂载）
+models/
+*.gguf
+
+# 临时文件
+*.log
+*.tmp
+
+# 配置文件
+README.md
+Dockerfile*
+docker-compose*
+.env
+.venv
+env/
+venv/
+
+# 其他镜像
+main*.py
+requirements*.txt
+docker-compose*.yml
+!docker-compose-llamacpp.yml
+!Dockerfile-llamacpp

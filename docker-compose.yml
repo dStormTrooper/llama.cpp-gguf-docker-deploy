@@ -1,36 +1,61 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  llama-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: llama-cpp-qwen:simple
-    container_name: llama-qwen-server
-    ports:
-     
-      - "8085:8000"  # llama.cpp 原生端口（可选访问）
-    volumes:
-      # 挂载模型目录
-      - ./models:/models
-      # 挂载模型缓存（如果需要）
-      - ./model-cache:/app-offs
-    environment:
-      - MODEL_PATH=/models/Qwen3.5-4B-Q4_K_M.gguf # 模型路径变量
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          # 根据你的系统调整
-          cpus: "14.0"
-          memory: 24G
-        reservations:
-          cpus: '2.0'
-          memory: 4G
-    # 健康检查
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+    llama-server-debian:
+        image: llama-server:debian
+        container_name: llama-server-debian
+        ports:
+            - "8085:8000" # llama.cpp 原生端口（可选访问）
+        volumes:
+            # 挂载模型目录
+            - ./models:/models
+            # 挂载模型缓存（如果需要）
+            - ./model-cache:/app-offs
+        environment:
+            - MODEL_PATH=/models/Qwen3.5-4B-Q4_K_M.gguf # 模型路径变量
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    # 根据你的系统调整
+                    cpus: "14.0"
+                    memory: 24G
+                reservations:
+                    cpus: "2.0"
+                    memory: 4G
+        # 健康检查
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s
+    llama-server-ubuntu:
+        image: llama-server:ubuntu
+        container_name: llama-server-ubuntu
+        ports:
+            - "8086:8000" # llama.cpp 原生端口（可选访问）
+        volumes:
+            # 挂载模型目录
+            - ./models:/models
+            # 挂载模型缓存（如果需要）
+            - ./model-cache:/app-offs
+        environment:
+            - MODEL_PATH=/models/Qwen3.5-4B-Q4_K_M.gguf # 模型路径变量
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    # 根据你的系统调整
+                    cpus: "14.0"
+                    memory: 24G
+                reservations:
+                    cpus: "2.0"
+                    memory: 4G
+        # 健康检查
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 40s

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # 从环境变量获取模型文件路径（docker-compose 传入）
 MODEL_FILE="${MODEL_PATH}"
@@ -23,7 +23,6 @@ echo "📡 OpenAI API: http://localhost:8000/v1/chat/completions"
 echo "🌐 Web UI: http://localhost:8000"
 echo ""
 
-# 启动服务器并捕获退出状态
 ./llama.cpp/build/bin/llama-server \
     -m "$MODEL_FILE" \
     --host 0.0.0.0 \
@@ -31,16 +30,4 @@ echo ""
     --ctx-size 4096 \
     --threads $THREADS \
     --batch-size 2048
-
-SERVER_EXIT_CODE=$?
-
-# 如果服务器退出了，永远循环打印时间
-if [ $SERVER_EXIT_CODE -ne 0 ]; then
-    echo ""
-    echo "❌ Server crashed with exit code: $SERVER_EXIT_CODE"
-    echo "⏰ Entering eternal time loop..."
-    while true; do
-        echo -e "\r⏰ $(date '+%H:%M:%S') - Server crashed - keeping time..."
-        sleep 10000
-    done
-fi
+      # 尝试增大 batch 以加速 prompt 处理，或者减小以测试带宽瓶颈

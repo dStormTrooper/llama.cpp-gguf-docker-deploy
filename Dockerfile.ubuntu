@@ -1,0 +1,50 @@
+# 第一阶段：构建阶段
+FROM ubuntu:22.04 AS builder
+# 避免交互式提示
+ENV DEBIAN_FRONTEND=noninteractive
+# 设置工作目录
+WORKDIR /app
+
+# 安装编译依赖
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# 克隆并编译 llama.cpp
+RUN git clone https://github.com/ggerganov/llama.cpp.git && \
+    cd llama.cpp && \
+    # 编译 llama.cpp (使用 CMake)
+    cmake -B build -DGGML_NATIVE=ON -DCMAKE_BUILD_TYPE=Release && \
+    cmake --build build -j$(nproc)
+
+# 第二阶段：运行阶段
+FROM ubuntu:22.04 AS runtime
+# 避免交互式提示
+ENV DEBIAN_FRONTEND=noninteractive
+# 设置工作目录
+WORKDIR /app
+
+# 先创建模型目录
+RUN mkdir -p /models
+
+# 只安装运行时依赖，使用 --no-install-recommends 和简化的安装过程
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libgomp1 && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean
+# 从构建阶段复制编译好的二进制文件
+COPY --from=builder /app/llama.cpp/build /app/llama.cpp/build
+
+# 复制启动脚本
+COPY launch.sh /app/launch.sh
+RUN chmod +x /app/launch.sh
+
+# 暴露端口
+EXPOSE 8000
+
+# 启动命令
+CMD ["./launch.sh"]

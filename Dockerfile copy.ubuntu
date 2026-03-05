@@ -22,8 +22,6 @@ RUN apt-get update && apt-get install -y \
     cmake -B build -DGGML_NATIVE=ON -DCMAKE_BUILD_TYPE=Release && \ 
     cmake --build build -j$(nproc) && \
     cd build && \
-    # 不执行 make install，直接使用 build 中的二进制文件
-    # make install && \
     # 先备份 build 目录
     cp -r /app/llama.cpp/build /app/build && \
     # 删除编译依赖和源码
